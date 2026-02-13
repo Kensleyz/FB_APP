@@ -1,6 +1,7 @@
 using System.Text;
 using AspNetCoreRateLimit;
 using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -16,15 +17,13 @@ public static class ServiceCollectionExtensions
         services.AddControllers(options =>
         {
             options.Filters.Add<ValidationFilter>();
-        });
-
-        services.AddInfrastructure(configuration);
+        });        services.AddInfrastructure(configuration);
         services.AddJwtAuthentication(configuration);
         services.AddSwaggerDocumentation();
         services.AddRateLimiting(configuration);
         services.AddCorsPolicy(configuration);
         services.AddHealthChecks();
-        services.AddHangfireServices(configuration);
+        // services.AddHangfireServices(configuration); // TODO: Enable after first run
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssemblyContaining<Program>();
@@ -136,15 +135,18 @@ public static class ServiceCollectionExtensions
                     .AllowCredentials();
             });
         });
-    }
-
-    private static void AddHangfireServices(this IServiceCollection services, IConfiguration configuration)
+    }    private static void AddHangfireServices(this IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = configuration["DATABASE_URL"]
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? "Host=postgres;Port=5432;Database=pageboost_db;Username=pageboost;Password=pageboost_dev";
+
         services.AddHangfire(config =>
         {
             config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings();
+                .UseRecommendedSerializerSettings()
+                .UsePostgreSqlStorage(opts => opts.UseNpgsqlConnection(connectionString));
         });
         services.AddHangfireServer();
     }

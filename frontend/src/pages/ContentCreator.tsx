@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ContentCreatorForm } from '../components/content/ContentCreator';
 import { Modal } from '../components/common/Modal';
 import { ScheduleForm } from '../components/scheduler/ScheduleForm';
@@ -8,7 +7,6 @@ import { Alert } from '../components/common/Alert';
 import type { PostVariation } from '../types/content';
 
 export function ContentCreatorPage() {
-  const navigate = useNavigate();
   const [scheduleModal, setScheduleModal] = useState(false);
   const [selectedVariation, setSelectedVariation] = useState<PostVariation | null>(null);
   const [success, setSuccess] = useState<string | null>(null);

@@ -19,13 +19,12 @@ public class ScheduleController : ControllerBase
     public ScheduleController(IMediator mediator)
     {
         _mediator = mediator;
-    }
-
-    [HttpPost]
+    }    [HttpPost]
     public async Task<ActionResult<Result<ScheduleDto>>> Create([FromBody] CreateScheduleDto dto)
     {
         var userId = GetUserId();
-        var result = await _mediator.Send(new CreateScheduleCommand(userId, dto.PageId, dto.Content, dto.ScheduledFor, dto.ImageUrl, dto.Hashtags, dto.CallToAction));
+        var hashtags = dto.Hashtags != null ? string.Join(",", dto.Hashtags) : null;
+        var result = await _mediator.Send(new CreateScheduleCommand(userId, dto.PageId, dto.Content, dto.ScheduledFor, dto.ImageUrl, hashtags, dto.CallToAction));
         if (!result.IsSuccess) return BadRequest(result);
         return CreatedAtAction(nameof(GetById), new { id = result.Data!.Id }, result);
     }
@@ -46,13 +45,13 @@ public class ScheduleController : ControllerBase
         var result = await _mediator.Send(new GetScheduleByIdQuery(userId, id));
         if (!result.IsSuccess) return NotFound(result);
         return Ok(result);
-    }
-
-    [HttpPut("{id:guid}")]
+    }    [HttpPut("{id:guid}")]
     public async Task<ActionResult<Result<ScheduleDto>>> Update(Guid id, [FromBody] UpdateScheduleDto dto)
     {
         var userId = GetUserId();
-        var result = await _mediator.Send(new UpdateScheduleCommand(userId, id, dto.Content, dto.ScheduledFor, dto.ImageUrl, dto.Hashtags, dto.CallToAction));
+        var scheduledFor = dto.ScheduledFor ?? DateTime.UtcNow;
+        var hashtags = dto.Hashtags != null ? string.Join(",", dto.Hashtags) : null;
+        var result = await _mediator.Send(new UpdateScheduleCommand(userId, id, dto.Content ?? string.Empty, scheduledFor, dto.ImageUrl, hashtags, dto.CallToAction));
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }

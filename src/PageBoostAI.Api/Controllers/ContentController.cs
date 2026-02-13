@@ -28,13 +28,11 @@ public class ContentController : ControllerBase
         var result = await _mediator.Send(new GenerateContentCommand(userId, dto.PageId, dto.BusinessType, dto.Tone, dto.PostType, dto.AdditionalContext));
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
-    }
-
-    [HttpPost("images/generate")]
+    }    [HttpPost("images/generate")]
     public async Task<ActionResult<Result<GeneratedImageDto>>> GenerateImage([FromBody] GenerateImageDto dto)
     {
         var userId = GetUserId();
-        var result = await _mediator.Send(new GenerateImageCommand(userId, dto.Prompt, dto.Style));
+        var result = await _mediator.Send(new GenerateImageCommand(userId, dto.Prompt, dto.Style ?? "photographic"));
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }

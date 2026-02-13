@@ -1,5 +1,3 @@
-using Hangfire;
-using Hangfire.PostgreSql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,10 +16,10 @@ namespace PageBoostAI.Infrastructure;
 public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
-    {
-        // Database
+    {        // Database
         var connectionString = configuration["DATABASE_URL"]
-            ?? "Host=localhost;Port=5432;Database=pageboost_db;Username=pageboost;Password=pageboost_dev";
+            ?? configuration.GetConnectionString("DefaultConnection")
+            ?? "Host=postgres;Port=5432;Database=pageboost_db;Username=pageboost;Password=pageboost_dev";
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString));
@@ -45,13 +43,8 @@ public static class DependencyInjection
         services.AddHttpClient<IAnthropicService, AnthropicService>();
         services.AddHttpClient<IFacebookGraphService, FacebookGraphService>();
         services.AddHttpClient<IUnsplashService, UnsplashService>();
-        services.AddSingleton<IPayFastService, PayFastService>();
-
-        // Background Jobs (Hangfire) - configure storage
-        // AddHangfire/AddHangfireServer are called in the API project (requires ASP.NET host)
-        // Here we configure the global Hangfire storage so it's ready when the host starts.
-        GlobalConfiguration.Configuration.UsePostgreSqlStorage(opts =>
-            opts.UseNpgsqlConnection(connectionString));
+        services.AddSingleton<IPayFastService, PayFastService>();        // Background Jobs (Hangfire)
+        // Storage configuration is deferred to API layer after services are built
         services.AddScoped<IPostPublishingJob, PostPublishingJob>();
         services.AddScoped<ITokenRefreshJob, TokenRefreshJob>();
 

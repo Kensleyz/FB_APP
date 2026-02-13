@@ -9,7 +9,7 @@ import { PostVariations } from './PostVariations';
 import { Input } from '../common/Input';
 import { Button } from '../common/Button';
 import { Alert } from '../common/Alert';
-import type { BusinessType, Language, PostType, PostVariation, Tone } from '../../types/content';
+import type {  Language, PostType, PostVariation, Tone } from '../../types/content';
 
 interface ContentCreatorFormProps {
   onSchedule: (variation: PostVariation) => void;
