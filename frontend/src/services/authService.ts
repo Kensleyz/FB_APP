@@ -11,10 +11,10 @@ import type {
 
 export const authService = {
   login: (data: LoginRequest) =>
-    api.post<AuthResponse>('/auth/login', data).then((r) => r.data),
+    api.post<{ data: AuthResponse }>('/auth/login', data).then((r) => r.data.data),
 
   register: (data: RegisterRequest) =>
-    api.post<AuthResponse>('/auth/register', data).then((r) => r.data),
+    api.post<{ data: AuthResponse }>('/auth/register', data).then((r) => r.data.data),
 
   verifyEmail: (token: string) =>
     api.post('/auth/verify-email', { token }).then((r) => r.data),
@@ -26,13 +26,13 @@ export const authService = {
     api.post('/auth/reset-password', data).then((r) => r.data),
 
   getMe: () =>
-    api.get<UserDto>('/auth/me').then((r) => r.data),
+    api.get<{ data: UserDto }>('/auth/me').then((r) => r.data.data),
 
   updateProfile: (data: UpdateProfileRequest) =>
-    api.put<UserDto>('/auth/me', data).then((r) => r.data),
+    api.put<{ data: UserDto }>('/auth/me', data).then((r) => r.data.data),
 
   refresh: (refreshToken: string) =>
-    api.post<AuthResponse>('/auth/refresh', { refreshToken }).then((r) => r.data),
+    api.post<{ data: AuthResponse }>('/auth/refresh', { refreshToken }).then((r) => r.data.data),
 
   logout: () =>
     api.post('/auth/logout').then((r) => r.data),
