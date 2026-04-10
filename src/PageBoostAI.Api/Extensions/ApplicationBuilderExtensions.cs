@@ -19,7 +19,8 @@ public static class ApplicationBuilderExtensions
             options.RoutePrefix = "swagger";
         });
 
-        app.UseHttpsRedirection();app.UseCors("PageBoostPolicy");
+        app.UseCors("PageBoostPolicy");
+        app.UseHttpsRedirection();
         app.UseIpRateLimiting();
         app.UseAuthentication();
         app.UseAuthorization();
