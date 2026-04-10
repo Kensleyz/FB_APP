@@ -8,7 +8,10 @@ namespace PageBoostAI.Api.Extensions;
 public static class ApplicationBuilderExtensions
 {
     public static WebApplication UseApiPipeline(this WebApplication app)
-    {        app.UseMiddleware<RequestLoggingMiddleware>();
+    {
+        app.UseCors("PageBoostPolicy");
+
+        app.UseMiddleware<RequestLoggingMiddleware>();
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         // Enable Swagger in all environments for now (TODO: restrict in production)
@@ -18,8 +21,6 @@ public static class ApplicationBuilderExtensions
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "PageBoost AI API v1");
             options.RoutePrefix = "swagger";
         });
-
-        app.UseCors("PageBoostPolicy");
         app.UseIpRateLimiting();
         app.UseAuthentication();
         app.UseAuthorization();
