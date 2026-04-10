@@ -15,6 +15,5 @@ RUN dotnet publish src/PageBoostAI.Api -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
 COPY --from=build /app/publish .
-EXPOSE 5000
-ENV ASPNETCORE_URLS=http://+:5000
-ENTRYPOINT ["dotnet", "PageBoostAI.Api.dll"]
+EXPOSE 10000
+ENTRYPOINT ["/bin/sh", "-c", "ASPNETCORE_URLS=http://+:${PORT:-10000} dotnet PageBoostAI.Api.dll"]
