@@ -39,7 +39,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         await _emailService.SendVerificationEmailAsync(
             email.Value, user.EmailVerificationToken!, cancellationToken);
 
-        var accessToken = _jwtService.GenerateAccessToken(user);
+        var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Email.Value, user.SubscriptionTier.ToString());
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         var userDto = new UserDto(

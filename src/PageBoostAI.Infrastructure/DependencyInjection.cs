@@ -33,7 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IUsageMetricsRepository, UsageMetricsRepository>();
 
         // Identity
-        services.AddSingleton<IJwtService, JwtService>();
+        services.AddSingleton<AppInterfaces.IJwtService, JwtService>();
         services.AddSingleton<IEncryptionService, EncryptionService>();
 
         // Email

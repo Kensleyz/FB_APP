@@ -1,5 +1,7 @@
 using Hangfire;
+using Microsoft.EntityFrameworkCore;
 using PageBoostAI.Api.Extensions;
+using PageBoostAI.Infrastructure.Persistence;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -20,6 +22,12 @@ try
     builder.Services.AddApiServices(builder.Configuration);
 
     var app = builder.Build();
+
+    await using (var scope = app.Services.CreateAsyncScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        await db.Database.MigrateAsync();
+    }
 
     app.UseApiPipeline();
 

@@ -4,15 +4,9 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using PageBoostAI.Application.Common.Interfaces;
 
 namespace PageBoostAI.Infrastructure.Identity;
-
-public interface IJwtService
-{
-    string GenerateAccessToken(Guid userId, string email, string subscriptionTier);
-    string GenerateRefreshToken();
-    ClaimsPrincipal? ValidateAccessToken(string token);
-}
 
 public class JwtService : IJwtService
 {
@@ -61,7 +55,7 @@ public class JwtService : IJwtService
         return Convert.ToBase64String(randomBytes);
     }
 
-    public ClaimsPrincipal? ValidateAccessToken(string token)
+    public ClaimsPrincipal? ValidateToken(string token)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
         var tokenHandler = new JwtSecurityTokenHandler();
