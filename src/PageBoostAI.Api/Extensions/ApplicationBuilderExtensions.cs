@@ -20,7 +20,6 @@ public static class ApplicationBuilderExtensions
         });
 
         app.UseCors("PageBoostPolicy");
-        app.UseHttpsRedirection();
         app.UseIpRateLimiting();
         app.UseAuthentication();
         app.UseAuthorization();
