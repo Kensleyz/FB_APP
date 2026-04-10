@@ -36,11 +36,8 @@ public class GetDashboardOverviewQueryHandler : IRequestHandler<GetDashboardOver
 
         var currentPeriod = DateTime.UtcNow.ToString("yyyy-MM");
 
-        var pagesTask = _facebookPageRepository.GetByUserIdAsync(request.UserId, cancellationToken);
-        var metricsTask = _usageMetricsRepository.GetByUserIdAndPeriodAsync(request.UserId, currentPeriod, cancellationToken);
-        await Task.WhenAll(pagesTask, metricsTask);
-        var pages = pagesTask.Result;
-        var metrics = metricsTask.Result;
+        var pages = await _facebookPageRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+        var metrics = await _usageMetricsRepository.GetByUserIdAndPeriodAsync(request.UserId, currentPeriod, cancellationToken);
 
         var pageIds = pages.Select(p => p.Id).ToHashSet();
 
