@@ -71,7 +71,9 @@ public static class DependencyInjection
         if (!connectionString.StartsWith("postgresql://") && !connectionString.StartsWith("postgres://"))
             return connectionString;
 
-        var uri = new Uri(connectionString);
+        Uri uri;
+        try { uri = new Uri(connectionString); }
+        catch (UriFormatException) { return connectionString; }
         var userInfo = uri.UserInfo.Split(':');
         var user = Uri.UnescapeDataString(userInfo[0]);
         var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
