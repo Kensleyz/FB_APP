@@ -1,16 +1,9 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Configuration;
+using PageBoostAI.Application.Common.Interfaces;
 
 namespace PageBoostAI.Infrastructure.Identity;
-
-public interface IEncryptionService
-{
-    string Encrypt(string plainText);
-    string Decrypt(string cipherText);
-    string HashPassword(string password);
-    bool VerifyPassword(string password, string hash);
-}
 
 public class EncryptionService : IEncryptionService
 {

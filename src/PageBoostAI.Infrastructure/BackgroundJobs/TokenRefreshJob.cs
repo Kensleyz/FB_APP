@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 using PageBoostAI.Domain.Interfaces;
-using PageBoostAI.Infrastructure.ExternalServices;
+using PageBoostAI.Application.Common.Interfaces;
 
 namespace PageBoostAI.Infrastructure.BackgroundJobs;
 
@@ -44,13 +44,12 @@ public class TokenRefreshJob : ITokenRefreshJob
         {
             try
             {
-                var pageInfo = await _facebookGraphService.GetPageInfoAsync(
-                    page.PageAccessToken, page.FacebookPageId, cancellationToken);
+                var (newToken, expiresAt) = await _facebookGraphService.GetLongLivedTokenAsync(
+                    page.PageAccessToken, cancellationToken);
 
-                if (pageInfo.AccessToken is not null)
+                if (!string.IsNullOrEmpty(newToken))
                 {
-                    // Long-lived tokens typically expire in ~60 days
-                    page.RefreshToken(pageInfo.AccessToken, DateTime.UtcNow.AddDays(60));
+                    page.RefreshToken(newToken, expiresAt);
                     await _facebookPageRepository.UpdateAsync(page, cancellationToken);
 
                     _logger.LogInformation("Refreshed token for page {PageId} ({PageName})",

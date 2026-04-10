@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using PageBoostAI.Domain.Enums;
 using PageBoostAI.Domain.Interfaces;
-using PageBoostAI.Infrastructure.ExternalServices;
+using PageBoostAI.Application.Common.Interfaces;
 
 namespace PageBoostAI.Infrastructure.BackgroundJobs;
 

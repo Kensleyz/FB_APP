@@ -1,17 +1,10 @@
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using PageBoostAI.Application.Common.Interfaces;
 using StackExchange.Redis;
 
 namespace PageBoostAI.Infrastructure.Caching;
-
-public interface ICacheService
-{
-    Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default);
-    Task SetAsync<T>(string key, T value, TimeSpan? expiry = null, CancellationToken cancellationToken = default);
-    Task RemoveAsync(string key, CancellationToken cancellationToken = default);
-    Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default);
-}
 
 public class RedisCacheService : ICacheService, IDisposable
 {
@@ -46,11 +39,11 @@ public class RedisCacheService : ICacheService, IDisposable
         return JsonSerializer.Deserialize<T>(value!);
     }
 
-    public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null, CancellationToken cancellationToken = default)
+    public async Task SetAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
     {
         var serialized = JsonSerializer.Serialize(value);
-        await _database.StringSetAsync(key, serialized, expiry ?? DefaultExpiry);
-        _logger.LogDebug("Cached key: {Key}, expiry: {Expiry}", key, expiry ?? DefaultExpiry);
+        await _database.StringSetAsync(key, serialized, expiration ?? DefaultExpiry);
+        _logger.LogDebug("Cached key: {Key}, expiration: {Expiry}", key, expiration ?? DefaultExpiry);
     }
 
     public async Task RemoveAsync(string key, CancellationToken cancellationToken = default)

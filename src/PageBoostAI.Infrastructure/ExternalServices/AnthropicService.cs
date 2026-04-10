@@ -2,14 +2,10 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using PageBoostAI.Application.Common.Interfaces;
+using PageBoostAI.Domain.Enums;
 
 namespace PageBoostAI.Infrastructure.ExternalServices;
-
-public interface IAnthropicService
-{
-    Task<string> GenerateContentAsync(string prompt, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<string>> GeneratePostVariationsAsync(string businessType, string tone, string topic, int count = 3, CancellationToken cancellationToken = default);
-}
 
 public class AnthropicService : IAnthropicService
 {
@@ -39,56 +35,81 @@ public class AnthropicService : IAnthropicService
         _httpClient.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01");
     }
 
-    public async Task<string> GenerateContentAsync(string prompt, CancellationToken cancellationToken = default)
+    public async Task<List<PostVariation>> GeneratePostsAsync(
+        BusinessType businessType,
+        ToneOption tone,
+        PostType postType,
+        string language,
+        string businessName,
+        string businessDescription,
+        CancellationToken cancellationToken = default)
+    {
+        var prompt = $$"""
+            Generate 3 unique Facebook post variations for a {{businessType}} business in South Africa.
+
+            Business Name: {{businessName}}
+            Business Description: {{businessDescription}}
+            Post Type: {{postType}}
+            Tone: {{tone}}
+            Language: {{language}}
+
+            For each variation return exactly this JSON format (return a JSON array, nothing else):
+            [
+              {
+                "content": "post text here",
+                "hashtags": ["hashtag1", "hashtag2"],
+                "callToAction": "CTA text here"
+              }
+            ]
+            """;
+
+        var content = await GenerateContentAsync(prompt, cancellationToken);
+
+        try
+        {
+            var start = content.IndexOf('[');
+            var end = content.LastIndexOf(']') + 1;
+            var json = content[start..end];
+
+            var variations = JsonSerializer.Deserialize<List<PostVariationJson>>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? [];
+
+            return variations.Select(v => new PostVariation(
+                v.Content ?? string.Empty,
+                v.Hashtags ?? [],
+                v.CallToAction ?? string.Empty)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to parse Anthropic response as JSON, falling back to text parsing");
+            return [new PostVariation(content, [], string.Empty)];
+        }
+    }
+
+    private async Task<string> GenerateContentAsync(string prompt, CancellationToken cancellationToken)
     {
         var request = new
         {
             model = _model,
             max_tokens = 1024,
             system = SystemPrompt,
-            messages = new[]
-            {
-                new { role = "user", content = prompt }
-            }
+            messages = new[] { new { role = "user", content = prompt } }
         };
 
         var response = await _httpClient.PostAsJsonAsync("v1/messages", request, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
-        var content = json.GetProperty("content")[0].GetProperty("text").GetString();
+        var text = json.GetProperty("content")[0].GetProperty("text").GetString();
 
         _logger.LogInformation("Generated content via Anthropic API, model: {Model}", _model);
-
-        return content ?? string.Empty;
+        return text ?? string.Empty;
     }
 
-    public async Task<IReadOnlyList<string>> GeneratePostVariationsAsync(
-        string businessType, string tone, string topic, int count = 3, CancellationToken cancellationToken = default)
+    private sealed class PostVariationJson
     {
-        var prompt = $"""
-            Generate {count} unique Facebook post variations for a {businessType} in South Africa.
-
-            Topic: {topic}
-            Tone: {tone}
-
-            Requirements:
-            - Each post should be under 280 characters
-            - Include relevant hashtags
-            - Make it engaging for South African audiences
-            - Each variation should have a different angle or approach
-
-            Return ONLY the posts, separated by "---" on its own line. Do not include numbering or labels.
-            """;
-
-        var content = await GenerateContentAsync(prompt, cancellationToken);
-        var variations = content
-            .Split("---", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(v => !string.IsNullOrWhiteSpace(v))
-            .ToList();
-
-        _logger.LogInformation("Generated {Count} post variations for {BusinessType}", variations.Count, businessType);
-
-        return variations;
+        public string? Content { get; init; }
+        public List<string>? Hashtags { get; init; }
+        public string? CallToAction { get; init; }
     }
 }

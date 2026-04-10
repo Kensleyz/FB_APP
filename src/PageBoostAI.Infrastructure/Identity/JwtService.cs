@@ -17,10 +17,11 @@ public class JwtService : IJwtService
 
     public JwtService(IConfiguration configuration)
     {
-        _secretKey = configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured.");
-        _issuer = configuration["JWT_ISSUER"] ?? "PageBoostAI";
-        _audience = configuration["JWT_AUDIENCE"] ?? "PageBoostAI";
-        _accessTokenExpirationMinutes = int.TryParse(configuration["JWT_EXPIRATION_MINUTES"], out var minutes) ? minutes : 60;
+        var jwtSettings = configuration.GetSection("JwtSettings");
+        _secretKey = jwtSettings["SecretKey"] ?? configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT SecretKey is not configured.");
+        _issuer = jwtSettings["Issuer"] ?? "PageBoostAI";
+        _audience = jwtSettings["Audience"] ?? "PageBoostAI";
+        _accessTokenExpirationMinutes = int.TryParse(jwtSettings["AccessTokenExpiryMinutes"], out var minutes) ? minutes : 60;
     }
 
     public string GenerateAccessToken(Guid userId, string email, string subscriptionTier)
