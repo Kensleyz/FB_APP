@@ -7,10 +7,10 @@ public record LogoutCommand(Guid UserId) : IRequest<Result>;
 
 public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result>
 {
-    public async Task<Result> Handle(LogoutCommand request, CancellationToken cancellationToken)
+    public Task<Result> Handle(LogoutCommand request, CancellationToken cancellationToken)
     {
-        // TODO: Implement logout logic
-        await Task.CompletedTask;
-        return Result.Success();
+        // JWT is stateless — invalidation is handled client-side by discarding the token.
+        // If token blacklisting is added later, do it here via ICacheService.
+        return Task.FromResult(Result.Success());
     }
 }

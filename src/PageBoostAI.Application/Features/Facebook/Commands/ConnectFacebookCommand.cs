@@ -1,5 +1,6 @@
 using MediatR;
 using PageBoostAI.Application.Common;
+using PageBoostAI.Application.Common.Interfaces;
 
 namespace PageBoostAI.Application.Features.Facebook.Commands;
 
@@ -7,10 +8,18 @@ public record ConnectFacebookCommand(Guid UserId, string RedirectUri) : IRequest
 
 public class ConnectFacebookCommandHandler : IRequestHandler<ConnectFacebookCommand, Result<string>>
 {
-    public async Task<Result<string>> Handle(ConnectFacebookCommand request, CancellationToken cancellationToken)
+    private readonly IFacebookGraphService _facebookGraphService;
+
+    public ConnectFacebookCommandHandler(IFacebookGraphService facebookGraphService)
     {
-        // TODO: Implement Facebook connect logic
-        await Task.CompletedTask;
-        return Result<string>.Failure("Not implemented yet");
+        _facebookGraphService = facebookGraphService;
+    }
+
+    public Task<Result<string>> Handle(ConnectFacebookCommand request, CancellationToken cancellationToken)
+    {
+        // Encode userId and frontend redirect URI in state so we can retrieve them in the callback
+        var state = $"{request.UserId}|{request.RedirectUri}";
+        var authUrl = _facebookGraphService.BuildAuthUrl(state);
+        return Task.FromResult(Result<string>.Success(authUrl));
     }
 }

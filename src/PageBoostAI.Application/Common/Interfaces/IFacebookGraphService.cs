@@ -10,4 +10,5 @@ public interface IFacebookGraphService
     Task<FacebookInsights> GetInsightsAsync(string pageAccessToken, string pageId, CancellationToken cancellationToken = default);
     Task<string> ExchangeCodeForTokenAsync(string authCode, CancellationToken cancellationToken = default);
     Task<(string Token, DateTime ExpiresAt)> GetLongLivedTokenAsync(string shortLivedToken, CancellationToken cancellationToken = default);
+    string BuildAuthUrl(string state);
 }

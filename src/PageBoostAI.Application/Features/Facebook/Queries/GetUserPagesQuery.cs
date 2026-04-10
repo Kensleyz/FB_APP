@@ -1,6 +1,7 @@
 using MediatR;
 using PageBoostAI.Application.Common;
 using PageBoostAI.Application.DTOs;
+using PageBoostAI.Domain.Interfaces;
 
 namespace PageBoostAI.Application.Features.Facebook.Queries;
 
@@ -8,10 +9,29 @@ public record GetUserPagesQuery(Guid UserId) : IRequest<Result<List<FacebookPage
 
 public class GetUserPagesQueryHandler : IRequestHandler<GetUserPagesQuery, Result<List<FacebookPageDto>>>
 {
+    private readonly IFacebookPageRepository _facebookPageRepository;
+
+    public GetUserPagesQueryHandler(IFacebookPageRepository facebookPageRepository)
+    {
+        _facebookPageRepository = facebookPageRepository;
+    }
+
     public async Task<Result<List<FacebookPageDto>>> Handle(GetUserPagesQuery request, CancellationToken cancellationToken)
     {
-        // TODO: Implement get user pages logic
-        await Task.CompletedTask;
-        return Result<List<FacebookPageDto>>.Failure("Not implemented yet");
+        var pages = await _facebookPageRepository.GetByUserIdAsync(request.UserId, cancellationToken);
+
+        var dtos = pages
+            .Where(p => p.IsActive)
+            .Select(p => new FacebookPageDto(
+                p.Id,
+                p.FacebookPageId,
+                p.PageName,
+                p.PageCategory,
+                null, // never expose the access token to the client
+                p.IsActive,
+                p.ConnectedAt))
+            .ToList();
+
+        return Result<List<FacebookPageDto>>.Success(dtos);
     }
 }
