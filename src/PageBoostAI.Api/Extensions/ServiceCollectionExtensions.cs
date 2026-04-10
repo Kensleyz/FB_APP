@@ -123,7 +123,14 @@ public static class ServiceCollectionExtensions
 
     private static void AddCorsPolicy(this IServiceCollection services, IConfiguration configuration)
     {
-        var allowedOrigins = configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>() ?? new[] { "http://localhost:5173" };
+        var allowedOrigins = configuration.GetSection("CorsSettings:AllowedOrigins").Get<string[]>()
+            ?? new[] { "http://localhost:5173" };
+
+        var frontendUrl = configuration["FRONTEND_URL"];
+        if (!string.IsNullOrEmpty(frontendUrl))
+        {
+            allowedOrigins = allowedOrigins.Append(frontendUrl).Distinct().ToArray();
+        }
 
         services.AddCors(options =>
         {
