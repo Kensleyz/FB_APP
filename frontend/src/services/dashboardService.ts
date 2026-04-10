@@ -9,7 +9,20 @@ import type {
 
 export const dashboardService = {
   getOverview: () =>
-    api.get<DashboardOverview>('/dashboard/overview').then((r) => r.data),
+    api.get('/dashboard/overview').then((r) => {
+      const d = r.data.data;
+      return {
+        connectedPages: d.usage.pagesConnected,
+        totalPagesAllowed: d.usage.pagesLimit,
+        postsThisMonth: d.usage.postsGenerated,
+        postsLimit: d.usage.postsLimit,
+        imagesThisMonth: d.usage.imagesCreated,
+        imagesLimit: d.usage.imagesLimit,
+        upcomingPosts: d.scheduledPosts,
+        engagementRate: 0,
+        recentPosts: [],
+      } as DashboardOverview;
+    }),
 
   getAnalytics: (pageId: string, period = '30d') =>
     api.get(`/dashboard/analytics`, { params: { pageId, period } }).then((r) => r.data),
