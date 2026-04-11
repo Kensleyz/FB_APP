@@ -25,7 +25,7 @@ public class FacebookGraphService : IFacebookGraphService
         _appSecret = configuration["FACEBOOK_APP_SECRET"] ?? configuration["FacebookSettings:AppSecret"] ?? string.Empty;
         _redirectUri = configuration["FACEBOOK_REDIRECT_URI"] ?? configuration["FacebookSettings:RedirectUri"] ?? string.Empty;
 
-        _httpClient.BaseAddress = new Uri("https://graph.facebook.com/v19.0/");
+        _httpClient.BaseAddress = new Uri("https://graph.facebook.com/v25.0/");
     }
 
     public async Task<List<FacebookPageInfo>> GetPagesAsync(string userAccessToken, CancellationToken cancellationToken = default)
@@ -117,7 +117,7 @@ public class FacebookGraphService : IFacebookGraphService
     public string BuildAuthUrl(string state)
     {
         const string scopes = "pages_show_list,pages_read_engagement,pages_manage_posts,pages_read_user_content";
-        return $"https://www.facebook.com/v19.0/dialog/oauth" +
+        return $"https://www.facebook.com/v25.0/dialog/oauth" +
                $"?client_id={_appId}" +
                $"&redirect_uri={Uri.EscapeDataString(_redirectUri)}" +
                $"&scope={scopes}" +
