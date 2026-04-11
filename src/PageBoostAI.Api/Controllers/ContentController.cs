@@ -1,11 +1,11 @@
-using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using PageBoostAI.Application.Common;
-using PageBoostAI.Application.DTOs;
-using PageBoostAI.Application.Features.Content.Commands;
-using PageBoostAI.Application.Features.Content.Queries;
+using PageBoostAI.Application.Common.Models;
+using PageBoostAI.Application.Content.Commands.GenerateImage;
+using PageBoostAI.Application.Content.Commands.GeneratePost;
+using PageBoostAI.Application.Content.DTOs;
+using PageBoostAI.Application.Content.Queries.GetTemplates;
 
 namespace PageBoostAI.Api.Controllers;
 
@@ -22,33 +22,27 @@ public class ContentController : ControllerBase
     }
 
     [HttpPost("generate")]
-    public async Task<ActionResult<Result<GeneratedContentDto>>> Generate([FromBody] GenerateContentDto dto)
+    public async Task<ActionResult<Result<GeneratePostResponseDto>>> Generate([FromBody] GeneratePostRequestDto dto)
     {
-        var userId = GetUserId();
-        var result = await _mediator.Send(new GenerateContentCommand(userId, dto.PageId, dto.BusinessType, dto.Tone, dto.PostType, dto.AdditionalContext));
+        var result = await _mediator.Send(new GeneratePostCommand(
+            dto.BusinessType, dto.Tone, dto.PostType, dto.Language, dto.BusinessName, dto.BusinessDescription));
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
-    }    [HttpPost("images/generate")]
-    public async Task<ActionResult<Result<GeneratedImageDto>>> GenerateImage([FromBody] GenerateImageDto dto)
+    }
+
+    [HttpPost("images/generate")]
+    public async Task<ActionResult<Result<GenerateImageResponseDto>>> GenerateImage([FromBody] GenerateImageRequestDto dto)
     {
-        var userId = GetUserId();
-        var result = await _mediator.Send(new GenerateImageCommand(userId, dto.Prompt, dto.Style ?? "photographic"));
+        var result = await _mediator.Send(new GenerateImageCommand(dto.SearchQuery, dto.OverlayText, dto.OptimizeForFacebook));
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
     }
 
     [HttpGet("templates")]
-    public async Task<ActionResult<Result<List<ContentTemplateDto>>>> GetTemplates()
+    public async Task<ActionResult<Result<TemplatesDto>>> GetTemplates()
     {
-        var userId = GetUserId();
-        var result = await _mediator.Send(new GetContentTemplatesQuery(userId));
+        var result = await _mediator.Send(new GetTemplatesQuery());
         if (!result.IsSuccess) return BadRequest(result);
         return Ok(result);
-    }
-
-    private Guid GetUserId()
-    {
-        var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        return Guid.Parse(claim!);
     }
 }
