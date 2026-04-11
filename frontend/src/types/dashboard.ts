@@ -59,5 +59,5 @@ export interface UpdateScheduleRequest {
 
 export interface CalendarResponse {
   month: string;
-  posts: ScheduleDto[];
+  scheduledPosts: ScheduleDto[];
 }

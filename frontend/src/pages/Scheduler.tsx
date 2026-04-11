@@ -24,7 +24,7 @@ export function Scheduler() {
     try {
       const monthStr = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
       const data = await scheduleService.getCalendar(monthStr);
-      setPosts(data.posts);
+      setPosts(data.scheduledPosts ?? []);
     } catch {
       setError('Failed to load scheduled posts.');
     } finally {
