@@ -21,7 +21,7 @@ public record UserProfileDto(Guid Id, string Email, string FirstName, string Las
 
 // Facebook
 public record ConnectFacebookDto(string RedirectUri);
-public record FacebookPageDto(Guid Id, string FacebookPageId, string PageName, string? Category, string? AccessToken, bool IsConnected, DateTime ConnectedAt);
+public record FacebookPageDto(Guid Id, string FacebookPageId, string PageName, string? PageCategory, string? ProfilePictureUrl, int FollowerCount, bool IsActive, DateTime ConnectedAt, DateTime? LastSyncedAt);
 public record PageInsightsDto(Guid PageId, string PageName, int TotalFollowers, int TotalLikes, int PostsPublished, int Reach, int Engagement);
 
 // Content

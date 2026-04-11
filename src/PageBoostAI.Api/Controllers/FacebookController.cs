@@ -33,20 +33,18 @@ public class FacebookController : ControllerBase
 
     [AllowAnonymous]
     [HttpGet("callback")]
-    public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string? state = null)
+    public async Task<ActionResult<Result<List<FacebookPageDto>>>> Callback([FromQuery] string code, [FromQuery] string? state = null)
     {
         // State format: "{userId}|{frontendRedirectUri}"
         var parts = state?.Split('|', 2);
         if (parts is not { Length: 2 } || !Guid.TryParse(parts[0], out var userId))
-            return BadRequest("Invalid state parameter.");
-
-        var frontendRedirectUri = parts[1];
+            return BadRequest(Result<List<FacebookPageDto>>.Failure("Invalid state parameter."));
 
         var result = await _mediator.Send(new FacebookCallbackCommand(userId, code, state));
         if (!result.IsSuccess)
-            return Redirect($"{frontendRedirectUri}?error={Uri.EscapeDataString(result.Errors.FirstOrDefault() ?? "Connection failed.")}");
+            return BadRequest(result);
 
-        return Redirect($"{frontendRedirectUri}?connected=true");
+        return Ok(result);
     }
 
     [HttpGet("pages")]

@@ -27,9 +27,11 @@ public class GetUserPagesQueryHandler : IRequestHandler<GetUserPagesQuery, Resul
                 p.FacebookPageId,
                 p.PageName,
                 p.PageCategory,
-                null, // never expose the access token to the client
+                p.ProfilePictureUrl,
+                p.FollowerCount,
                 p.IsActive,
-                p.ConnectedAt))
+                p.ConnectedAt,
+                p.LastSyncedAt))
             .ToList();
 
         return Result<List<FacebookPageDto>>.Success(dtos);

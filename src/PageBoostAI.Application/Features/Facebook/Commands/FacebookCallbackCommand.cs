@@ -58,7 +58,7 @@ public class FacebookCallbackCommandHandler : IRequestHandler<FacebookCallbackCo
                 await _facebookPageRepository.UpdateAsync(existing, cancellationToken);
 
                 resultDtos.Add(new FacebookPageDto(existing.Id, existing.FacebookPageId, existing.PageName,
-                    existing.PageCategory, null, existing.IsActive, existing.ConnectedAt));
+                    existing.PageCategory, existing.ProfilePictureUrl, existing.FollowerCount, existing.IsActive, existing.ConnectedAt, existing.LastSyncedAt));
             }
             else
             {
@@ -74,7 +74,7 @@ public class FacebookCallbackCommandHandler : IRequestHandler<FacebookCallbackCo
                 await _facebookPageRepository.AddAsync(page, cancellationToken);
 
                 resultDtos.Add(new FacebookPageDto(page.Id, page.FacebookPageId, page.PageName,
-                    page.PageCategory, null, page.IsActive, page.ConnectedAt));
+                    page.PageCategory, page.ProfilePictureUrl, page.FollowerCount, page.IsActive, page.ConnectedAt, page.LastSyncedAt));
             }
         }
 
