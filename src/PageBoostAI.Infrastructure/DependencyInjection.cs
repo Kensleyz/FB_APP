@@ -45,7 +45,11 @@ public static class DependencyInjection
         services.AddSingleton<IEmailService, EmailService>();
 
         // External services (registered against Application interfaces)
-        services.AddHttpClient<IAnthropicService, AnthropicService>();
+        var aiProvider = configuration["AI_PROVIDER"] ?? "groq";
+        if (aiProvider.Equals("anthropic", StringComparison.OrdinalIgnoreCase))
+            services.AddHttpClient<IAnthropicService, AnthropicService>();
+        else
+            services.AddHttpClient<IAnthropicService, GroqService>();
         services.AddHttpClient<IFacebookGraphService, FacebookGraphService>();
         services.AddHttpClient<IUnsplashService, UnsplashService>();
         services.AddSingleton<IPayFastService, PayFastService>();
