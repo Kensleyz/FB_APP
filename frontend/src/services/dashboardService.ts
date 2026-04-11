@@ -30,16 +30,16 @@ export const dashboardService = {
 
 export const scheduleService = {
   create: (data: CreateScheduleRequest) =>
-    api.post<ScheduleDto>('/schedule', data).then((r) => r.data),
+    api.post('/schedule', data).then((r) => r.data.data as ScheduleDto),
 
   list: () =>
-    api.get<ScheduleDto[]>('/schedule').then((r) => r.data),
+    api.get('/schedule').then((r) => r.data.data as ScheduleDto[]),
 
   get: (id: string) =>
-    api.get<ScheduleDto>(`/schedule/${id}`).then((r) => r.data),
+    api.get(`/schedule/${id}`).then((r) => r.data.data as ScheduleDto),
 
   update: (id: string, data: UpdateScheduleRequest) =>
-    api.put<ScheduleDto>(`/schedule/${id}`, data).then((r) => r.data),
+    api.put(`/schedule/${id}`, data).then((r) => r.data.data as ScheduleDto),
 
   delete: (id: string) =>
     api.delete(`/schedule/${id}`).then((r) => r.data),
@@ -48,5 +48,5 @@ export const scheduleService = {
     api.post(`/schedule/${id}/publish-now`).then((r) => r.data),
 
   getCalendar: (month: string) =>
-    api.get<CalendarResponse>(`/schedule/calendar`, { params: { month } }).then((r) => r.data),
+    api.get(`/schedule/calendar`, { params: { month } }).then((r) => r.data.data as CalendarResponse),
 };
