@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Facebook, Unlink, RefreshCw, ExternalLink } from 'lucide-react';
 import { useFacebook } from '../hooks/useFacebook';
 import { useFacebookStore } from '../store/facebookStore';
@@ -9,12 +10,19 @@ import { Loading } from '../components/common/Loading';
 import { formatDate } from '../utils/formatters';
 
 export function ConnectFacebook() {
-  const { fetchPages, connectFacebook, disconnectPage, error } = useFacebook();
+  const { fetchPages, connectFacebook, disconnectPage, error, setError } = useFacebook();
   const { pages, loading } = useFacebookStore();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
+    const connected = searchParams.get('connected');
+    const err = searchParams.get('error');
+    if (connected === 'true' || err) {
+      setSearchParams({}, { replace: true });
+      if (err) setError(decodeURIComponent(err));
+    }
     fetchPages();
-  }, [fetchPages]);
+  }, []);
 
   return (
     <div className="space-y-6 max-w-3xl">

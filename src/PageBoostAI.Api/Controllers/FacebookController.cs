@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Linq;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -30,13 +31,22 @@ public class FacebookController : ControllerBase
         return Ok(result);
     }
 
+    [AllowAnonymous]
     [HttpGet("callback")]
-    public async Task<ActionResult<Result<List<FacebookPageDto>>>> Callback([FromQuery] string code, [FromQuery] string? state = null)
+    public async Task<IActionResult> Callback([FromQuery] string code, [FromQuery] string? state = null)
     {
-        var userId = GetUserId();
+        // State format: "{userId}|{frontendRedirectUri}"
+        var parts = state?.Split('|', 2);
+        if (parts is not { Length: 2 } || !Guid.TryParse(parts[0], out var userId))
+            return BadRequest("Invalid state parameter.");
+
+        var frontendRedirectUri = parts[1];
+
         var result = await _mediator.Send(new FacebookCallbackCommand(userId, code, state));
-        if (!result.IsSuccess) return BadRequest(result);
-        return Ok(result);
+        if (!result.IsSuccess)
+            return Redirect($"{frontendRedirectUri}?error={Uri.EscapeDataString(result.Errors.FirstOrDefault() ?? "Connection failed.")}");
+
+        return Redirect($"{frontendRedirectUri}?connected=true");
     }
 
     [HttpGet("pages")]
