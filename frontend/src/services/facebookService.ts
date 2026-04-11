@@ -9,7 +9,7 @@ export const facebookService = {
     api.get('/facebook/callback', { params: { code, state } }).then((r) => r.data),
 
   getPages: () =>
-    api.get<FacebookPageDto[]>('/facebook/pages').then((r) => r.data),
+    api.get<{ data: FacebookPageDto[] }>('/facebook/pages').then((r) => r.data.data),
 
   disconnectPage: (pageId: string) =>
     api.delete(`/facebook/pages/${pageId}/disconnect`).then((r) => r.data),
