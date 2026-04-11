@@ -4,15 +4,14 @@ using PageBoostAI.Application.Common.Interfaces;
 using PageBoostAI.Application.Common.Models;
 using PageBoostAI.Application.Content.DTOs;
 using PageBoostAI.Domain.Enums;
-using PageBoostAI.Domain.Exceptions;
 using PageBoostAI.Domain.Interfaces;
 
 namespace PageBoostAI.Application.Content.Commands.GeneratePost;
 
 public record GeneratePostCommand(
-    BusinessType BusinessType,
-    ToneOption Tone,
-    PostType PostType,
+    string BusinessType,
+    string Tone,
+    string PostType,
     string Language,
     string BusinessName,
     string BusinessDescription) : IRequest<Result<GeneratePostResponseDto>>;
@@ -24,6 +23,15 @@ public class GeneratePostCommandValidator : AbstractValidator<GeneratePostComman
         RuleFor(x => x.BusinessName).NotEmpty().MaximumLength(100);
         RuleFor(x => x.BusinessDescription).NotEmpty().MaximumLength(500);
         RuleFor(x => x.Language).NotEmpty().MaximumLength(20);
+        RuleFor(x => x.BusinessType).NotEmpty()
+            .Must(v => Enum.TryParse<BusinessType>(v, true, out _))
+            .WithMessage("Invalid business type.");
+        RuleFor(x => x.Tone).NotEmpty()
+            .Must(v => Enum.TryParse<ToneOption>(v, true, out _))
+            .WithMessage("Invalid tone option.");
+        RuleFor(x => x.PostType).NotEmpty()
+            .Must(v => Enum.TryParse<PostType>(v, true, out _))
+            .WithMessage("Invalid post type.");
     }
 }
 
@@ -60,8 +68,12 @@ public class GeneratePostCommandHandler : IRequestHandler<GeneratePostCommand, R
             return Result<GeneratePostResponseDto>.Failure(
                 $"Post generation limit reached for the {user.SubscriptionTier} plan.");
 
+        Enum.TryParse<BusinessType>(request.BusinessType, true, out var businessType);
+        Enum.TryParse<ToneOption>(request.Tone, true, out var tone);
+        Enum.TryParse<PostType>(request.PostType, true, out var postType);
+
         var variations = await _anthropicService.GeneratePostsAsync(
-            request.BusinessType, request.Tone, request.PostType,
+            businessType, tone, postType,
             request.Language, request.BusinessName, request.BusinessDescription,
             cancellationToken);
 
