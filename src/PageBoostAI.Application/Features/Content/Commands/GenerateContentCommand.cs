@@ -21,13 +21,13 @@ public class GenerateContentCommandHandler : IRequestHandler<GenerateContentComm
     private readonly IUserRepository _userRepository;
     private readonly IFacebookPageRepository _facebookPageRepository;
     private readonly IUsageMetricsRepository _usageMetricsRepository;
-    private readonly IAnthropicService _anthropicService;
+    private readonly IAIService _anthropicService;
 
     public GenerateContentCommandHandler(
         IUserRepository userRepository,
         IFacebookPageRepository facebookPageRepository,
         IUsageMetricsRepository usageMetricsRepository,
-        IAnthropicService anthropicService)
+        IAIService anthropicService)
     {
         _userRepository = userRepository;
         _facebookPageRepository = facebookPageRepository;

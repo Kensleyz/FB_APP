@@ -4,7 +4,7 @@ namespace PageBoostAI.Application.Common.Interfaces;
 
 public record PostVariation(string Content, List<string> Hashtags, string CallToAction);
 
-public interface IAnthropicService
+public interface IAIService
 {
     Task<List<PostVariation>> GeneratePostsAsync(
         BusinessType businessType,

@@ -7,7 +7,7 @@ using PageBoostAI.Domain.Enums;
 
 namespace PageBoostAI.Infrastructure.ExternalServices;
 
-public class AnthropicService : IAnthropicService
+public class AnthropicService : IAIService
 {
     private const string SystemPrompt = """
         You are a South African social media content expert specializing in Facebook page management

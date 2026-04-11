@@ -37,18 +37,18 @@ public class GeneratePostCommandValidator : AbstractValidator<GeneratePostComman
 
 public class GeneratePostCommandHandler : IRequestHandler<GeneratePostCommand, Result<GeneratePostResponseDto>>
 {
-    private readonly IAnthropicService _anthropicService;
+    private readonly IAIService _aiService;
     private readonly ICurrentUserService _currentUser;
     private readonly IUsageMetricsRepository _usageRepository;
     private readonly IUserRepository _userRepository;
 
     public GeneratePostCommandHandler(
-        IAnthropicService anthropicService,
+        IAIService aiService,
         ICurrentUserService currentUser,
         IUsageMetricsRepository usageRepository,
         IUserRepository userRepository)
     {
-        _anthropicService = anthropicService;
+        _aiService = aiService;
         _currentUser = currentUser;
         _usageRepository = usageRepository;
         _userRepository = userRepository;
@@ -75,7 +75,7 @@ public class GeneratePostCommandHandler : IRequestHandler<GeneratePostCommand, R
         List<PostVariation> variations;
         try
         {
-            variations = await _anthropicService.GeneratePostsAsync(
+            variations = await _aiService.GeneratePostsAsync(
                 businessType, tone, postType,
                 request.Language, request.BusinessName, request.BusinessDescription,
                 cancellationToken);
