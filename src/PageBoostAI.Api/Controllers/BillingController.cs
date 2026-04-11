@@ -43,7 +43,6 @@ public class BillingController : ControllerBase
     {
         var userId = GetUserId();
         var result = await _mediator.Send(new GetSubscriptionQuery(userId));
-        if (!result.IsSuccess) return NotFound(result);
         return Ok(result);
     }
 

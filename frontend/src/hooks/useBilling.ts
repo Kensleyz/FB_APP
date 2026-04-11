@@ -23,7 +23,7 @@ export function useBilling() {
   const fetchSubscription = useCallback(async () => {
     try {
       const sub = await billingService.getSubscription();
-      setSubscription(sub);
+      setSubscription(sub ?? null);
     } catch {
       setSubscription(null);
     }
