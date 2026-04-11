@@ -8,7 +8,8 @@ import type {
 
 export const contentService = {
   generatePost: (data: GeneratePostRequest) =>
-    api.post<GeneratePostResponse>('/content/generate', data).then((r) => r.data),
+    api.post<{ isSuccess: boolean; data: GeneratePostResponse; errors: string[] }>('/content/generate', data)
+      .then((r) => r.data.data),
 
   generateImage: (data: GenerateImageRequest) =>
     api.post<GenerateImageResponse>('/content/images/generate', data).then((r) => r.data),

@@ -11,8 +11,13 @@ export function useContent() {
       setGenerating(true);
       try {
         const response = await contentService.generatePost(data);
-        setVariations(response.variations);
-        return response.variations;
+        const variations = response.variations.map((v, i) => ({
+          ...v,
+          id: v.id ?? `variation-${i}-${Date.now()}`,
+          hashtags: v.hashtags.map((h) => h.replace(/^#/, '')),
+        }));
+        setVariations(variations);
+        return variations;
       } catch (err: unknown) {
         const message =
           (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
