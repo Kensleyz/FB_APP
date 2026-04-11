@@ -97,7 +97,13 @@ public class AnthropicService : IAnthropicService
         };
 
         var response = await _httpClient.PostAsJsonAsync("v1/messages", request, cancellationToken);
-        response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            _logger.LogError("Anthropic API returned {StatusCode}: {Body}", (int)response.StatusCode, errorBody);
+            throw new InvalidOperationException($"Anthropic API error ({(int)response.StatusCode}): {errorBody}");
+        }
 
         var json = await response.Content.ReadFromJsonAsync<JsonElement>(cancellationToken: cancellationToken);
         var text = json.GetProperty("content")[0].GetProperty("text").GetString();

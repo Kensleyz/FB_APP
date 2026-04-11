@@ -72,10 +72,18 @@ public class GeneratePostCommandHandler : IRequestHandler<GeneratePostCommand, R
         Enum.TryParse<ToneOption>(request.Tone, true, out var tone);
         Enum.TryParse<PostType>(request.PostType, true, out var postType);
 
-        var variations = await _anthropicService.GeneratePostsAsync(
-            businessType, tone, postType,
-            request.Language, request.BusinessName, request.BusinessDescription,
-            cancellationToken);
+        List<PostVariation> variations;
+        try
+        {
+            variations = await _anthropicService.GeneratePostsAsync(
+                businessType, tone, postType,
+                request.Language, request.BusinessName, request.BusinessDescription,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            return Result<GeneratePostResponseDto>.Failure($"Content generation failed: {ex.Message}");
+        }
 
         metrics.IncrementPosts();
         await _usageRepository.UpdateAsync(metrics, cancellationToken);
