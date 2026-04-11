@@ -2,8 +2,8 @@ import api from './api';
 import type { FacebookPageDto, InsightsDto } from '../types/facebook';
 
 export const facebookService = {
-  initiateConnect: () =>
-    api.post<{ redirectUrl: string }>('/facebook/connect').then((r) => r.data),
+  initiateConnect: (redirectUri: string) =>
+    api.post<{ data: string }>('/facebook/connect', { redirectUri }).then((r) => r.data.data),
 
   callback: (code: string, state?: string) =>
     api.get('/facebook/callback', { params: { code, state } }).then((r) => r.data),

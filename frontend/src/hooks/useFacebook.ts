@@ -25,8 +25,8 @@ export function useFacebook() {
   const connectFacebook = useCallback(async () => {
     setError(null);
     try {
-      const { redirectUrl } = await facebookService.initiateConnect();
-      window.location.href = redirectUrl;
+      const redirectUrl = await facebookService.initiateConnect(globalThis.location.origin + '/connect-facebook');
+      globalThis.location.href = redirectUrl;
     } catch (err: unknown) {
       const message =
         (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
