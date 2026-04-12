@@ -57,7 +57,12 @@ export interface UpdateScheduleRequest {
   scheduledFor?: string;
 }
 
+export interface CalendarDayDto {
+  date: string;
+  schedules: ScheduleDto[];
+}
+
 export interface CalendarResponse {
   month: string;
-  scheduledPosts: ScheduleDto[];
+  days: CalendarDayDto[];
 }

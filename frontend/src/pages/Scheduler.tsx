@@ -8,9 +8,11 @@ import { Alert } from '../components/common/Alert';
 import { Button } from '../components/common/Button';
 import { Plus } from 'lucide-react';
 import { scheduleService } from '../services/dashboardService';
+import { useFacebook } from '../hooks/useFacebook';
 import type { ScheduleDto } from '../types/dashboard';
 
 export function Scheduler() {
+  const { fetchPages } = useFacebook();
   const [month, setMonth] = useState(new Date());
   const [posts, setPosts] = useState<ScheduleDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,13 +20,17 @@ export function Scheduler() {
   const [createModal, setCreateModal] = useState(false);
   const [creating, setCreating] = useState(false);
 
+  useEffect(() => {
+    fetchPages();
+  }, [fetchPages]);
+
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const monthStr = `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`;
       const data = await scheduleService.getCalendar(monthStr);
-      setPosts(data.scheduledPosts ?? []);
+      setPosts((data.days ?? []).flatMap((d) => d.schedules));
     } catch {
       setError('Failed to load scheduled posts.');
     } finally {

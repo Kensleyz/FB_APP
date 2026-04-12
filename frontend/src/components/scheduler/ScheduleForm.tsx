@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { Alert } from '../common/Alert';
@@ -22,6 +22,12 @@ export function ScheduleForm({
 }: ScheduleFormProps) {
   const pages = useFacebookStore((s) => s.pages);
   const [pageId, setPageId] = useState(pages[0]?.id || '');
+
+  useEffect(() => {
+    if (pages.length > 0 && !pageId) {
+      setPageId(pages[0].id);
+    }
+  }, [pages, pageId]);
   const [content, setContent] = useState(initialContent);
   const [hashtags, setHashtags] = useState(initialHashtags.join(', '));
   const [callToAction, setCallToAction] = useState(initialCta);
