@@ -20,11 +20,13 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
 {
     private readonly IUserRepository _userRepository;
     private readonly IJwtService _jwtService;
+    private readonly IEmailService _emailService;
 
-    public RegisterCommandHandler(IUserRepository userRepository, IJwtService jwtService)
+    public RegisterCommandHandler(IUserRepository userRepository, IJwtService jwtService, IEmailService emailService)
     {
         _userRepository = userRepository;
         _jwtService = jwtService;
+        _emailService = emailService;
     }
 
     public async Task<Result<AuthResponseDto>> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -38,6 +40,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
         var user = new User(email, passwordHash, request.FirstName, request.LastName, request.PhoneNumber);
 
         await _userRepository.AddAsync(user, cancellationToken);
+
+        await _emailService.SendVerificationEmailAsync(user.Email.Value, user.EmailVerificationToken!, cancellationToken);
 
         var accessToken = _jwtService.GenerateAccessToken(user.Id, user.Email.Value, user.SubscriptionTier.ToString());
         var refreshToken = _jwtService.GenerateRefreshToken();

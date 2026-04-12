@@ -8,7 +8,21 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Run tests
+        run: dotnet test --configuration Release --verbosity minimal
+
   build-and-push:
+    needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -48,3 +62,17 @@ jobs:
           tags: |
             ${{ env.FRONTEND_IMAGE }}:latest
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Trigger Render API deploy
+        if: ${{ secrets.RENDER_API_DEPLOY_HOOK != '' }}
+        run: curl -fsSL "${{ secrets.RENDER_API_DEPLOY_HOOK }}" -o /dev/null
+
+      - name: Trigger Render Frontend deploy
+        if: ${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK != '' }}
+        run: curl -fsSL "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}" -o /dev/null

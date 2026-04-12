@@ -84,6 +84,16 @@ public class AuthController : ControllerBase
     }
 
     [Authorize]
+    [HttpPut("me")]
+    public async Task<ActionResult<Result<UserProfileDto>>> UpdateProfile([FromBody] UpdateProfileDto dto)
+    {
+        var userId = GetUserId();
+        var result = await _mediator.Send(new UpdateProfileCommand(userId, dto.FirstName, dto.LastName, dto.PhoneNumber));
+        if (!result.IsSuccess) return BadRequest(result);
+        return Ok(result);
+    }
+
+    [Authorize]
     [HttpPost("logout")]
     public async Task<ActionResult<Result>> Logout()
     {

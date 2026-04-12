@@ -78,6 +78,14 @@ public sealed class User : BaseEntity
         return !metrics.HasReachedLimit(SubscriptionTier);
     }
 
+    public void UpdateProfile(string firstName, string lastName, string? phoneNumber)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        PhoneNumber = phoneNumber;
+        SetUpdated();
+    }
+
     public void RecordLogin()
     {
         LastLoginAt = DateTime.UtcNow;

@@ -1,6 +1,7 @@
 using Hangfire;
 using Microsoft.EntityFrameworkCore;
 using PageBoostAI.Api.Extensions;
+using PageBoostAI.Infrastructure.BackgroundJobs;
 using PageBoostAI.Infrastructure.Persistence;
 using Serilog;
 
@@ -31,13 +32,15 @@ try
 
     app.UseApiPipeline();
 
-    // TODO: Enable Hangfire jobs after AddHangfireServices is re-enabled
-    // app.Lifetime.ApplicationStarted.Register(() =>
-    // {
-    //     var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
-    //     recurringJobManager.AddOrUpdate("post-publishing", () => Console.WriteLine("PostPublishingJob: checking for scheduled posts..."), Cron.Minutely);
-    //     recurringJobManager.AddOrUpdate("token-refresh", () => Console.WriteLine("TokenRefreshJob: refreshing Facebook tokens..."), "0 */6 * * *");
-    // });
+    var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+    recurringJobManager.AddOrUpdate<IPostPublishingJob>(
+        "post-publishing",
+        job => job.ExecuteAsync(CancellationToken.None),
+        Cron.Minutely);
+    recurringJobManager.AddOrUpdate<ITokenRefreshJob>(
+        "token-refresh",
+        job => job.ExecuteAsync(CancellationToken.None),
+        "0 */6 * * *");
 
     Log.Information("PageBoost AI API starting on {Environment}", builder.Environment.EnvironmentName);
 

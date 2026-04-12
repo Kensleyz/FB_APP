@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
         services.AddRateLimiting(configuration);
         services.AddCorsPolicy(configuration);
         services.AddHealthChecks();
-        // services.AddHangfireServices(configuration); // TODO: Enable after first run
+        services.AddHangfireServices(configuration);
         services.AddMediatR(cfg =>
         {
             cfg.RegisterServicesFromAssemblyContaining<Program>();

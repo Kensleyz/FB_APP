@@ -8,24 +8,42 @@ services:
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
-      - JWT_ISSUER=${JWT_ISSUER}
-      - JWT_AUDIENCE=${JWT_AUDIENCE}
+      - JWT_ISSUER=${JWT_ISSUER:-PageBoostAI}
+      - JWT_AUDIENCE=${JWT_AUDIENCE:-PageBoostAI}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-5-20250929}
+      - AI_PROVIDER=${AI_PROVIDER:-groq}
+      - GROQ_API_KEY=${GROQ_API_KEY}
       - FACEBOOK_APP_ID=${FACEBOOK_APP_ID}
       - FACEBOOK_APP_SECRET=${FACEBOOK_APP_SECRET}
       - FACEBOOK_REDIRECT_URI=${FACEBOOK_REDIRECT_URI}
       - PAYFAST_MERCHANT_ID=${PAYFAST_MERCHANT_ID}
       - PAYFAST_MERCHANT_KEY=${PAYFAST_MERCHANT_KEY}
       - PAYFAST_PASSPHRASE=${PAYFAST_PASSPHRASE}
-      - PAYFAST_MODE=${PAYFAST_MODE}
+      - PAYFAST_MODE=${PAYFAST_MODE:-sandbox}
       - UNSPLASH_ACCESS_KEY=${UNSPLASH_ACCESS_KEY}
       - REDIS_URL=redis://redis:6379
       - FRONTEND_URL=${FRONTEND_URL}
       - API_URL=${API_URL}
+      - SMTP_HOST=${SMTP_HOST:-smtp.sendgrid.net}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME:-apikey}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL:-noreply@pageboost.ai}
+      - SMTP_FROM_NAME=${SMTP_FROM_NAME:-PageBoost AI}
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     networks:
       - pageboost-network
 
@@ -33,15 +51,18 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${API_URL:-http://localhost:5000}
     ports:
       - "3000:80"
     depends_on:
       - api
+    restart: unless-stopped
     networks:
       - pageboost-network
 
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     ports:
       - "5432:5432"
     environment:
@@ -50,6 +71,12 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-pageboost_db}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pageboost} -d ${POSTGRES_DB:-pageboost_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - pageboost-network
 
@@ -57,11 +84,16 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    command: redis-server --appendonly yes
     networks:
       - pageboost-network
 
 volumes:
   postgres-data:
+  redis-data:
 
 networks:
   pageboost-network:

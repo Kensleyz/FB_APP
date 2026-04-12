@@ -16,6 +16,7 @@ public record VerifyEmailDto(string Token);
 public record RefreshTokenDto(string RefreshToken);
 public record ForgotPasswordDto(string Email);
 public record ResetPasswordDto(string Token, string NewPassword);
+public record UpdateProfileDto(string FirstName, string LastName, string? PhoneNumber = null);
 public record AuthResponseDto(string AccessToken, string RefreshToken, UserProfileDto User);
 public record UserProfileDto(Guid Id, string Email, string FirstName, string LastName, string? PhoneNumber, string SubscriptionTier, bool IsEmailVerified, DateTime? LastLoginAt, DateTime CreatedAt);
 

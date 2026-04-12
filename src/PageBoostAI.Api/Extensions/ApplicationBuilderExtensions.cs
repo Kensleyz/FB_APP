@@ -25,10 +25,10 @@ public static class ApplicationBuilderExtensions
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // app.UseHangfireDashboard("/hangfire", new DashboardOptions
-        // {
-        //     Authorization = new[] { new HangfireDashboardAuthFilter() }
-        // }); // TODO: Enable after first run
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        {
+            Authorization = new[] { new HangfireDashboardAuthFilter() }
+        });
 
         app.MapControllers();
         app.MapHealthChecks("/health");
