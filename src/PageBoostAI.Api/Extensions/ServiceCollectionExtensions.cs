@@ -144,9 +144,11 @@ public static class ServiceCollectionExtensions
         });
     }    private static void AddHangfireServices(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration["DATABASE_URL"]
+        var rawConnectionString = configuration["DATABASE_URL"]
             ?? configuration.GetConnectionString("DefaultConnection")
             ?? "Host=postgres;Port=5432;Database=pageboost_db;Username=pageboost;Password=pageboost_dev";
+
+        var connectionString = ConvertToNpgsqlConnectionString(rawConnectionString);
 
         services.AddHangfire(config =>
         {
@@ -156,5 +158,31 @@ public static class ServiceCollectionExtensions
                 .UsePostgreSqlStorage(opts => opts.UseNpgsqlConnection(connectionString));
         });
         services.AddHangfireServer();
+    }
+
+    private static string ConvertToNpgsqlConnectionString(string connectionString)
+    {
+        if (!connectionString.StartsWith("postgresql://") && !connectionString.StartsWith("postgres://"))
+            return connectionString;
+
+        var uri = new Uri(connectionString);
+        var userInfo = uri.UserInfo.Split(':');
+        var username = Uri.UnescapeDataString(userInfo[0]);
+        var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
+        var host = uri.Host;
+        var port = uri.Port > 0 ? uri.Port : 5432;
+        var database = uri.AbsolutePath.TrimStart('/');
+
+        var builder = new Npgsql.NpgsqlConnectionStringBuilder
+        {
+            Host = host,
+            Port = port,
+            Database = database,
+            Username = username,
+            Password = password,
+            SslMode = Npgsql.SslMode.Require,
+        };
+
+        return builder.ConnectionString;
     }
 }
